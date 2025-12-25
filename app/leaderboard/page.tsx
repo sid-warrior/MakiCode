@@ -42,27 +42,27 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen font-mono bg-bg">
       {/* Header */}
-      <header className="w-full py-6 px-10">
+      <header className="w-full py-4 md:py-6 px-4 md:px-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-2xl font-medium text-main no-underline hover:opacity-80 transition-opacity">
+          <Link href="/" className="text-xl md:text-2xl font-medium text-main no-underline hover:opacity-80 transition-opacity">
             devtype
           </Link>
-          <Link href="/" className="text-sm text-sub no-underline hover:text-text transition-colors">
+          <Link href="/" className="text-xs md:text-sm text-sub no-underline hover:text-text transition-colors">
             back to practice
           </Link>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-10 py-8">
+      <main className="max-w-4xl mx-auto px-4 md:px-10 py-4 md:py-8">
         {/* Title */}
-        <h1 className="text-5xl font-normal text-main mb-10">leaderboard</h1>
+        <h1 className="text-3xl md:text-5xl font-normal text-main mb-6 md:mb-10">leaderboard</h1>
 
         {/* Language Filters */}
-        <div className="flex flex-wrap items-center gap-2 mb-10">
-          <span className="text-sm text-sub mr-2">language:</span>
+        <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mb-6 md:mb-10">
+          <span className="text-xs md:text-sm text-sub mr-1 md:mr-2">language:</span>
           <button
             onClick={() => setSelectedLanguage('all')}
-            className={`px-5 py-2.5 text-sm rounded-lg border-none cursor-pointer font-mono transition-colors
+            className={`px-3 md:px-5 py-1.5 md:py-2.5 text-xs md:text-sm rounded-lg border-none cursor-pointer font-mono transition-colors
               ${selectedLanguage === 'all' ? 'bg-bg-sub text-main' : 'bg-transparent text-sub hover:text-text hover:bg-bg-sub/50'}`}
           >
             all
@@ -71,7 +71,7 @@ export default function LeaderboardPage() {
             <button
               key={lang}
               onClick={() => setSelectedLanguage(lang)}
-              className={`px-5 py-2.5 text-sm rounded-lg border-none cursor-pointer font-mono transition-colors
+              className={`px-3 md:px-5 py-1.5 md:py-2.5 text-xs md:text-sm rounded-lg border-none cursor-pointer font-mono transition-colors
                 ${selectedLanguage === lang ? 'bg-bg-sub text-main' : 'bg-transparent text-sub hover:text-text hover:bg-bg-sub/50'}`}
             >
               {lang}
@@ -83,63 +83,102 @@ export default function LeaderboardPage() {
         {loading ? (
           <p className="text-sub text-center py-16">loading...</p>
         ) : leaderboard.length === 0 ? (
-          <div className="text-center py-20 bg-bg-sub rounded-xl border border-border">
-            <p className="text-sub text-lg mb-4">no scores yet</p>
+          <div className="text-center py-12 md:py-20 bg-bg-sub rounded-xl border border-border">
+            <p className="text-sub text-base md:text-lg mb-4">no scores yet</p>
             <Link href="/" className="text-main no-underline hover:opacity-80 transition-opacity">
               be the first to submit a score →
             </Link>
           </div>
         ) : (
-          <div className="bg-bg-sub rounded-xl border border-border overflow-hidden">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="text-sub text-sm text-left border-b border-border">
-                  <th className="py-5 px-6 font-normal">#</th>
-                  <th className="py-5 px-6 font-normal">name</th>
-                  <th className="py-5 px-6 font-normal">wpm</th>
-                  <th className="py-5 px-6 font-normal">accuracy</th>
-                  <th className="py-5 px-6 font-normal">language</th>
-                  <th className="py-5 px-6 font-normal">time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((entry, index) => (
-                  <tr 
-                    key={index}
-                    className="border-b border-border last:border-b-0 hover:bg-border/30 transition-colors"
-                  >
-                    <td className="py-5 px-6">
-                      <span className={entry.rank <= 3 ? 'text-main font-medium' : 'text-sub'}>
-                        {entry.rank}
+          <>
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-3">
+              {leaderboard.map((entry, index) => (
+                <div 
+                  key={index}
+                  className="bg-bg-sub rounded-xl p-4 border border-border"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className={`text-lg font-medium ${entry.rank <= 3 ? 'text-main' : 'text-sub'}`}>
+                        #{entry.rank}
                       </span>
-                    </td>
-                    <td className="py-5 px-6">
-                      <div className="flex items-center gap-3">
-                        {entry.image ? (
-                          <Image
-                            src={entry.image}
-                            alt={entry.name}
-                            width={32}
-                            height={32}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-sub/50" />
-                        )}
-                        <span className="text-text">{entry.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-5 px-6">
-                      <span className="text-main font-medium">{entry.wpm}</span>
-                    </td>
-                    <td className="py-5 px-6 text-text">{entry.accuracy}%</td>
-                    <td className="py-5 px-6 text-sub">{entry.language}</td>
-                    <td className="py-5 px-6 text-sub">{entry.duration}s</td>
+                      {entry.image ? (
+                        <Image
+                          src={entry.image}
+                          alt={entry.name}
+                          width={28}
+                          height={28}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-sub/50" />
+                      )}
+                      <span className="text-text text-sm">{entry.name}</span>
+                    </div>
+                    <span className="text-main font-medium text-lg">{entry.wpm}</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-sub">
+                    <span>{entry.accuracy}% acc</span>
+                    <span>{entry.language}</span>
+                    <span>{entry.duration}s</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block bg-bg-sub rounded-xl border border-border overflow-hidden">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="text-sub text-sm text-left border-b border-border">
+                    <th className="py-5 px-6 font-normal">#</th>
+                    <th className="py-5 px-6 font-normal">name</th>
+                    <th className="py-5 px-6 font-normal">wpm</th>
+                    <th className="py-5 px-6 font-normal">accuracy</th>
+                    <th className="py-5 px-6 font-normal">language</th>
+                    <th className="py-5 px-6 font-normal">time</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {leaderboard.map((entry, index) => (
+                    <tr 
+                      key={index}
+                      className="border-b border-border last:border-b-0 hover:bg-border/30 transition-colors"
+                    >
+                      <td className="py-5 px-6">
+                        <span className={entry.rank <= 3 ? 'text-main font-medium' : 'text-sub'}>
+                          {entry.rank}
+                        </span>
+                      </td>
+                      <td className="py-5 px-6">
+                        <div className="flex items-center gap-3">
+                          {entry.image ? (
+                            <Image
+                              src={entry.image}
+                              alt={entry.name}
+                              width={32}
+                              height={32}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-sub/50" />
+                          )}
+                          <span className="text-text">{entry.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-5 px-6">
+                        <span className="text-main font-medium">{entry.wpm}</span>
+                      </td>
+                      <td className="py-5 px-6 text-text">{entry.accuracy}%</td>
+                      <td className="py-5 px-6 text-sub">{entry.language}</td>
+                      <td className="py-5 px-6 text-sub">{entry.duration}s</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </main>
     </div>
