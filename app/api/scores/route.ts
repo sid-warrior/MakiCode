@@ -4,6 +4,9 @@ import dbConnect from '@/lib/mongodb';
 import { Score } from '@/models/Score';
 import { User } from '@/models/User';
 
+// Minimum accuracy required to save score (anti-spam)
+const MIN_ACCURACY = 70;
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
@@ -14,8 +17,24 @@ export async function POST(req: NextRequest) {
 
     const { wpm, accuracy, language, duration } = await req.json();
 
-    if (!wpm || !accuracy || !language || !duration) {
+    if (!wpm || accuracy === undefined || !language || !duration) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Anti-spam: Reject scores with low accuracy (random key pressing)
+    if (accuracy < MIN_ACCURACY) {
+      return NextResponse.json({ 
+        error: `Score not saved. Minimum ${MIN_ACCURACY}% accuracy required.`,
+        reason: 'low_accuracy'
+      }, { status: 400 });
+    }
+
+    // Anti-spam: Reject unrealistic WPM (more than 200 is suspicious)
+    if (wpm > 300) {
+      return NextResponse.json({ 
+        error: 'Score not saved. WPM seems unrealistic.',
+        reason: 'unrealistic_wpm'
+      }, { status: 400 });
     }
 
     await dbConnect();

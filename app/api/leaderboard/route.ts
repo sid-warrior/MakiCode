@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { Score } from '@/models/Score';
-import { User } from '@/models/User';
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,22 +10,46 @@ export async function GET(req: NextRequest) {
 
     await dbConnect();
 
-    // Build query
-    const query = language && language !== 'all' ? { language } : {};
+    // Build query - only show scores with at least 70% accuracy
+    const query: any = { accuracy: { $gte: 70 } };
+    if (language && language !== 'all') {
+      query.language = language;
+    }
 
-    // Get top scores
-    const topScores = await Score.find(query)
-      .sort({ wpm: -1, timestamp: -1 })
-      .limit(limit)
-      .populate('userId', 'name image');
+    // Get top scores - sort by weighted score (WPM * accuracy/100)
+    // This way both WPM and accuracy matter
+    const topScores = await Score.aggregate([
+      { $match: query },
+      {
+        $addFields: {
+          // Calculate weighted score: WPM * (accuracy/100)
+          // e.g., 100 WPM with 90% accuracy = 90 score
+          // e.g., 80 WPM with 100% accuracy = 80 score
+          // e.g., 120 WPM with 70% accuracy = 84 score
+          weightedScore: { $multiply: ['$wpm', { $divide: ['$accuracy', 100] }] }
+        }
+      },
+      { $sort: { weightedScore: -1, timestamp: -1 } },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
+    ]);
 
     // Format response
     const leaderboard = topScores.map((score: any, index: number) => ({
       rank: index + 1,
-      name: score.userId?.name || 'Anonymous',
-      image: score.userId?.image,
+      name: score.user?.name || 'Anonymous',
+      image: score.user?.image,
       wpm: score.wpm,
       accuracy: score.accuracy,
+      weightedScore: Math.round(score.weightedScore),
       language: score.language,
       duration: score.duration,
       timestamp: score.timestamp,

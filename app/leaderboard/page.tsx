@@ -12,6 +12,7 @@ interface LeaderboardEntry {
   image?: string;
   wpm: number;
   accuracy: number;
+  weightedScore?: number;
   language: string;
   duration: number;
 }
