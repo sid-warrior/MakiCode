@@ -128,7 +128,7 @@ export default function ResultsModal({ onRestart, snippetsCompleted }: ResultsMo
 
         {/* Test Info */}
         <p className="text-sub text-xs sm:text-sm mb-6 sm:mb-8">
-          {mode === 'practice' ? 'practice' : `${duration}s`} • {language === 'all' ? 'mixed' : language}
+          {mode === 'practice' ? 'practice' : `${duration}s`} • {language}
           {snippetsCompleted > 0 && ` • ${snippetsCompleted + 1} snippets`}
         </p>
 
