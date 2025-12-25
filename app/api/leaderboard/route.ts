@@ -10,14 +10,15 @@ export async function GET(req: NextRequest) {
 
     await dbConnect();
 
-    // Build query - only show scores with at least 70% accuracy
-    const query: any = { accuracy: { $gte: 70 } };
+    // Build query
+    const query: any = {};
     if (language && language !== 'all') {
       query.language = language;
     }
 
     // Get top scores - sort by weighted score (WPM * accuracy/100)
     // This way both WPM and accuracy matter
+    // Since WPM is calculated from correct chars only, this is fair
     const topScores = await Score.aggregate([
       { $match: query },
       {
@@ -25,7 +26,6 @@ export async function GET(req: NextRequest) {
           // Calculate weighted score: WPM * (accuracy/100)
           // e.g., 100 WPM with 90% accuracy = 90 score
           // e.g., 80 WPM with 100% accuracy = 80 score
-          // e.g., 120 WPM with 70% accuracy = 84 score
           weightedScore: { $multiply: ['$wpm', { $divide: ['$accuracy', 100] }] }
         }
       },

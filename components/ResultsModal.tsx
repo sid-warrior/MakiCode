@@ -15,7 +15,7 @@ export default function ResultsModal({ onRestart, snippetsCompleted }: ResultsMo
     isNewPersonalBest, dailyStreak 
   } = useTypingStore();
   const { data: session } = useSession();
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error' | 'low_accuracy'>('idle');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const autoSaveAttempted = useRef(false);
   const confettiTriggered = useRef(false);
 
@@ -45,21 +45,17 @@ export default function ResultsModal({ onRestart, snippetsCompleted }: ResultsMo
   }, [isTestComplete, isNewPersonalBest]);
 
   useEffect(() => {
-    // Only auto-save if accuracy is 70% or higher
+    // Auto-save score for timed tests
     if (isTestComplete && session && !autoSaveAttempted.current && mode === 'timed') {
       autoSaveAttempted.current = true;
-      if (accuracy >= 70) {
-        autoSaveScore();
-      } else {
-        setSaveStatus('low_accuracy');
-      }
+      autoSaveScore();
     }
     
     if (!isTestComplete) {
       autoSaveAttempted.current = false;
       setSaveStatus('idle');
     }
-  }, [isTestComplete, session, mode, accuracy]);
+  }, [isTestComplete, session, mode]);
 
   const autoSaveScore = async () => {
     setSaveStatus('saving');
@@ -73,12 +69,7 @@ export default function ResultsModal({ onRestart, snippetsCompleted }: ResultsMo
       if (response.ok) {
         setSaveStatus('saved');
       } else {
-        const data = await response.json();
-        if (data.reason === 'low_accuracy') {
-          setSaveStatus('low_accuracy');
-        } else {
-          setSaveStatus('error');
-        }
+        setSaveStatus('error');
       }
     } catch (error) {
       console.error('Error saving score:', error);
@@ -165,13 +156,12 @@ export default function ResultsModal({ onRestart, snippetsCompleted }: ResultsMo
         {session && mode === 'timed' && saveStatus !== 'idle' && (
           <p className={`text-xs mb-4 sm:mb-6 ${
             saveStatus === 'saved' ? 'text-main' : 
-            saveStatus === 'error' || saveStatus === 'low_accuracy' ? 'text-error' : 
+            saveStatus === 'error' ? 'text-error' : 
             'text-sub'
           }`}>
             {saveStatus === 'saving' && 'saving...'}
             {saveStatus === 'saved' && 'saved to leaderboard'}
             {saveStatus === 'error' && 'failed to save'}
-            {saveStatus === 'low_accuracy' && 'need 70%+ accuracy to save'}
           </p>
         )}
 
