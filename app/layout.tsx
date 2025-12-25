@@ -83,6 +83,14 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Explicit Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@pankajkumardev" />
+        <meta name="twitter:creator" content="@pankajkumardev" />
+        <meta name="twitter:title" content="DevType - Master Your Coding Speed" />
+        <meta name="twitter:description" content="Practice typing with real code snippets. Improve your WPM and accuracy." />
+        <meta name="twitter:image" content="https://devtype.pankajk.tech/og-image.png" />
+        <meta name="twitter:image:alt" content="DevType - Typing Speed Test for Developers" />
       </head>
       <body className="antialiased">
         <Providers>
