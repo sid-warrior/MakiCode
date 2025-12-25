@@ -43,7 +43,7 @@ export default function ThemeSelector() {
       
       {isOpen && (
         <div 
-          className="absolute top-full right-0 mt-2 bg-bg-sub border border-border rounded-lg py-2 min-w-[120px] z-50"
+          className="absolute top-full left-0 md:left-auto md:right-0 mt-2 bg-bg-sub border border-border rounded-lg py-2 min-w-[120px] z-50"
           onClick={(e) => e.stopPropagation()}
         >
           {themeOptions.map((theme) => (

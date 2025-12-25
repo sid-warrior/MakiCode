@@ -6,7 +6,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+      <main className="flex-1 flex flex-col items-center justify-start sm:justify-center px-2 sm:px-4 py-4 sm:py-8">
         <TypingTestContainer />
       </main>
     </div>

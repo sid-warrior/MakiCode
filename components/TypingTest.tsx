@@ -33,7 +33,6 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
   const [practiceTime, setPracticeTime] = useState(0);
   const [showHints, setShowHints] = useState(true);
 
-  // Load streak and personal best on mount
   useEffect(() => {
     loadStreak();
     loadPersonalBest();
@@ -135,7 +134,6 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
     return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}`;
   };
 
-  // Calculate progress
   const progress = currentSnippet.length > 0 
     ? Math.round((userInput.length / currentSnippet.length) * 100) 
     : 0;
@@ -143,11 +141,11 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
   return (
     <div className="w-full max-w-4xl mx-auto px-4 md:px-10 font-mono">
       {/* Timer, Live WPM and Controls */}
-      <div className="flex items-center justify-between mb-4 md:mb-8">
-        <div className="flex items-center gap-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 md:mb-8">
+        <div className="flex items-center gap-4 md:gap-6">
           {/* Timer */}
           <div 
-            className="text-4xl md:text-6xl"
+            className="text-3xl sm:text-4xl md:text-6xl"
             style={{ color: isPaused ? 'var(--color-sub)' : 'var(--color-main)' }}
           >
             {mode === 'practice' ? formatTime(practiceTime) : timeRemaining}
@@ -156,37 +154,38 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
           {/* Live WPM */}
           {isTestActive && !isPaused && liveWpm > 0 && (
             <div className="text-sub">
-              <span className="text-2xl md:text-3xl text-text">{liveWpm}</span>
+              <span className="text-xl sm:text-2xl md:text-3xl text-text">{liveWpm}</span>
               <span className="text-xs md:text-sm ml-1">wpm</span>
             </div>
           )}
         </div>
 
         {isTestActive && (
-          <div className="flex gap-2 md:gap-3">
+          <div className="flex gap-2 flex-wrap">
             {mode === 'practice' && (
               <button
                 onClick={handleFinishPractice}
-                className="px-3 md:px-6 py-2 md:py-3 bg-main hover:opacity-80 border-none rounded-lg text-xs md:text-sm text-bg cursor-pointer font-mono transition-opacity"
+                className="px-3 py-2 bg-main hover:opacity-80 border-none rounded-lg text-xs md:text-sm cursor-pointer font-mono transition-opacity"
+                style={{ color: '#1a1a1a' }}
               >
                 finish
               </button>
             )}
             <button
               onClick={() => isPaused ? (resumeTest(), focusInput()) : pauseTest()}
-              className="px-3 md:px-6 py-2 md:py-3 bg-bg-sub hover:bg-border border border-border rounded-lg text-xs md:text-sm text-text cursor-pointer font-mono transition-colors"
+              className="px-3 py-2 bg-bg-sub hover:bg-border border border-border rounded-lg text-xs md:text-sm text-text cursor-pointer font-mono transition-colors"
             >
               {isPaused ? 'resume' : 'pause'}
             </button>
             <button
               onClick={() => { resetTest(); onExit(); focusInput(); }}
-              className="px-3 md:px-6 py-2 md:py-3 bg-bg-sub hover:bg-border border border-border rounded-lg text-xs md:text-sm text-sub hover:text-text cursor-pointer font-mono transition-colors"
+              className="px-3 py-2 bg-bg-sub hover:bg-border border border-border rounded-lg text-xs md:text-sm text-sub hover:text-text cursor-pointer font-mono transition-colors"
             >
               restart
             </button>
             <button
               onClick={() => { resetTest(); onExit(); }}
-              className="px-3 md:px-6 py-2 md:py-3 bg-transparent hover:bg-error/20 border border-border rounded-lg text-xs md:text-sm text-sub hover:text-error cursor-pointer font-mono transition-colors"
+              className="px-3 py-2 bg-transparent hover:bg-error/20 border border-border rounded-lg text-xs md:text-sm text-sub hover:text-error cursor-pointer font-mono transition-colors"
             >
               exit
             </button>
@@ -218,16 +217,17 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
                 : `time remaining: ${timeRemaining}s`
               }
             </p>
-            <div className="flex gap-3 md:gap-4 justify-center">
+            <div className="flex gap-3 md:gap-4 justify-center flex-wrap">
               <button
                 onClick={() => { resumeTest(); focusInput(); }}
-                className="px-6 md:px-8 py-3 md:py-3.5 bg-main hover:bg-yellow-600 border-none rounded-lg text-sm md:text-base font-medium text-bg cursor-pointer font-mono transition-colors"
+                className="px-6 py-3 bg-main hover:opacity-80 border-none rounded-lg text-sm md:text-base font-medium cursor-pointer font-mono transition-opacity"
+                style={{ color: '#1a1a1a' }}
               >
                 resume
               </button>
               <button
                 onClick={() => { resetTest(); onExit(); }}
-                className="px-6 md:px-8 py-3 md:py-3.5 bg-transparent hover:bg-bg-sub border border-border rounded-lg text-sm md:text-base text-sub hover:text-text cursor-pointer font-mono transition-colors"
+                className="px-6 py-3 bg-transparent hover:bg-bg-sub border border-border rounded-lg text-sm md:text-base text-sub hover:text-text cursor-pointer font-mono transition-colors"
               >
                 exit
               </button>
@@ -242,9 +242,9 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
       {/* Code Box */}
       <div
         onClick={focusInput}
-        className="bg-bg-sub rounded-xl p-4 md:p-8 min-h-[200px] md:min-h-[300px] cursor-text border border-border relative"
+        className="bg-bg-sub rounded-xl p-4 md:p-8 min-h-[180px] sm:min-h-[220px] md:min-h-[300px] cursor-text border border-border relative overflow-x-auto"
       >
-        <pre className="font-mono text-sm md:text-base leading-relaxed md:leading-loose m-0 whitespace-pre-wrap break-words">
+        <pre className="font-mono text-xs sm:text-sm md:text-base leading-relaxed md:leading-loose m-0 whitespace-pre-wrap break-words">
           {currentSnippet.split('').map((char, i) => {
             const isTyped = i < userInput.length;
             const isCorrect = isTyped && userInput[i] === char;
@@ -297,9 +297,9 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
             }
           </p>
           
-          {/* Keyboard shortcuts hint */}
+          {/* Keyboard shortcuts hint - hide on mobile */}
           {showHints && (
-            <div className="flex flex-wrap gap-3 justify-center text-xs text-sub/70">
+            <div className="hidden sm:flex flex-wrap gap-3 justify-center text-xs text-sub/70">
               <span className="px-2 py-1 bg-bg-sub rounded">Tab → 4 spaces</span>
               <span className="px-2 py-1 bg-bg-sub rounded">Enter → new line</span>
               <span className="px-2 py-1 bg-bg-sub rounded">Esc → exit</span>
