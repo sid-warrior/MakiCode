@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { languages } from '@/lib/snippets';
+import { LeaderboardSkeleton } from '@/components/Skeletons';
 
 interface LeaderboardEntry {
   rank: number;
@@ -81,7 +82,7 @@ export default function LeaderboardPage() {
 
         {/* Content */}
         {loading ? (
-          <p className="text-sub text-center py-16">loading...</p>
+          <LeaderboardSkeleton />
         ) : leaderboard.length === 0 ? (
           <div className="text-center py-12 md:py-20 bg-bg-sub rounded-xl border border-border">
             <p className="text-sub text-base md:text-lg mb-4">no scores yet</p>

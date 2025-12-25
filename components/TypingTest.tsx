@@ -167,16 +167,22 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
             {mode === 'practice' && (
               <button
                 onClick={handleFinishPractice}
-                className="px-3 md:px-6 py-2 md:py-3 bg-main hover:bg-yellow-600 border-none rounded-lg text-xs md:text-sm text-bg cursor-pointer font-mono transition-colors"
+                className="px-3 md:px-6 py-2 md:py-3 bg-main hover:opacity-80 border-none rounded-lg text-xs md:text-sm text-bg cursor-pointer font-mono transition-opacity"
               >
                 finish
               </button>
             )}
             <button
               onClick={() => isPaused ? (resumeTest(), focusInput()) : pauseTest()}
-              className="px-3 md:px-6 py-2 md:py-3 bg-bg-sub hover:bg-border border border-border rounded-lg text-xs md:text-sm text-text hover:text-main cursor-pointer font-mono transition-colors"
+              className="px-3 md:px-6 py-2 md:py-3 bg-bg-sub hover:bg-border border border-border rounded-lg text-xs md:text-sm text-text cursor-pointer font-mono transition-colors"
             >
               {isPaused ? 'resume' : 'pause'}
+            </button>
+            <button
+              onClick={() => { resetTest(); onExit(); focusInput(); }}
+              className="px-3 md:px-6 py-2 md:py-3 bg-bg-sub hover:bg-border border border-border rounded-lg text-xs md:text-sm text-sub hover:text-text cursor-pointer font-mono transition-colors"
+            >
+              restart
             </button>
             <button
               onClick={() => { resetTest(); onExit(); }}

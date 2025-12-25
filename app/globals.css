@@ -38,11 +38,20 @@
 }
 
 @layer utilities {
+  /* Smooth animated caret */
   .caret {
-    border-left: 2px solid var(--color-main);
-    animation: blink 1s step-end infinite;
-    margin-left: -1px;
-    padding-left: 1px;
+    position: relative;
+  }
+
+  .caret::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background-color: var(--color-main);
+    animation: caret-blink 1s ease-in-out infinite;
   }
 
   .bg-bg { background-color: var(--color-bg); }
@@ -53,9 +62,30 @@
   .text-error { color: var(--color-error); }
   .border-border { border-color: var(--color-border); }
   .bg-border { background-color: var(--color-border); }
+  .bg-main { background-color: var(--color-main); }
+  .bg-error { background-color: var(--color-error); }
+
+  /* Skeleton loader animation */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-bg-sub) 25%,
+      var(--color-border) 50%,
+      var(--color-bg-sub) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
 }
 
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+/* Smooth caret blink animation */
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Skeleton loading animation */
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

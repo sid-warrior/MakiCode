@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { getUnlockedAchievements, achievements, AchievementStats } from '@/lib/achievements';
+import { DashboardSkeleton } from '@/components/Skeletons';
 
 interface Score {
   _id: string;
@@ -246,7 +247,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
         <h2 className="text-xl md:text-2xl font-normal text-text mb-4 md:mb-6">recent tests</h2>
 
         {loading ? (
-          <p className="text-sub">loading...</p>
+          <DashboardSkeleton />
         ) : scores.length === 0 ? (
           <div className="text-center py-8 md:py-12 bg-bg-sub rounded-xl border border-border">
             <p className="text-sub mb-4">no tests yet</p>

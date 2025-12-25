@@ -51,12 +51,12 @@ export const themes: Record<ThemeType, ThemeColors> = {
   },
   light: {
     bg: '#f5f5f5',
-    bgSub: '#e8e8e8',
-    text: '#323437',
-    sub: '#999999',
-    main: '#e2b714',
-    error: '#ca4754',
-    border: '#d0d0d0',
+    bgSub: '#e0e0e0',
+    text: '#1a1a1a',
+    sub: '#666666',
+    main: '#b58900',
+    error: '#dc3545',
+    border: '#cccccc',
   },
 };
 
