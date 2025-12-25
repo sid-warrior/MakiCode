@@ -4,6 +4,7 @@ import dbConnect from '@/lib/mongodb';
 import { User } from '@/models/User';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
@@ -33,12 +34,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
         } catch (error) {
           console.error('Database error during sign in:', error);
-          // Still allow sign in even if DB fails
         }
       }
       return true;
     },
-    async session({ session, token }) {
+    async session({ session }) {
       if (session.user) {
         try {
           await dbConnect();
@@ -49,7 +49,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
         } catch (error) {
           console.error('Database error during session:', error);
-          // Return session without DB stats if DB fails
         }
       }
       return session;
@@ -59,4 +58,3 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: '/',
   },
 });
-
