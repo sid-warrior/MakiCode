@@ -3,8 +3,8 @@ import { Language } from '@/lib/snippets';
 
 export type TestMode = 'timed' | 'practice';
 
-export interface TypingState {
-  // Test configuration
+interface TypingState {
+  // Config
   duration: number;
   language: Language | 'all';
   mode: TestMode;
@@ -14,36 +14,48 @@ export interface TypingState {
   isTestComplete: boolean;
   isPaused: boolean;
   timeRemaining: number;
-  
-  // Typing data
   currentSnippet: string;
   userInput: string;
+  
+  // Stats
   currentIndex: number;
   correctChars: number;
   incorrectChars: number;
   totalKeystrokes: number;
-  
-  // Keyboard heatmap data
   keyErrors: Record<string, number>;
   
   // Results
   wpm: number;
   accuracy: number;
   
+  // Live stats
+  liveWpm: number;
+  startTime: number | null;
+  
+  // Streak
+  dailyStreak: number;
+  lastPracticeDate: string | null;
+  
+  // Personal best
+  personalBest: number;
+  isNewPersonalBest: boolean;
+  
   // Actions
   setDuration: (duration: number) => void;
   setLanguage: (language: Language | 'all') => void;
   setMode: (mode: TestMode) => void;
-  setCurrentSnippet: (snippet: string) => void;
+  setSnippet: (snippet: string) => void;
   startTest: () => void;
-  updateInput: (input: string) => void;
-  tick: () => void;
-  resetTest: () => void;
-  clearInput: () => void;
-  calculateResults: () => void;
   pauseTest: () => void;
   resumeTest: () => void;
-  recordKeyError: (key: string) => void;
+  resetTest: () => void;
+  updateInput: (input: string) => void;
+  tick: () => void;
+  calculateResults: () => void;
+  updateLiveWpm: () => void;
+  loadStreak: () => void;
+  updateStreak: () => void;
+  loadPersonalBest: () => void;
 }
 
 export const useTypingStore = create<TypingState>((set, get) => ({
@@ -64,120 +76,36 @@ export const useTypingStore = create<TypingState>((set, get) => ({
   keyErrors: {},
   wpm: 0,
   accuracy: 0,
+  liveWpm: 0,
+  startTime: null,
+  dailyStreak: 0,
+  lastPracticeDate: null,
+  personalBest: 0,
+  isNewPersonalBest: false,
 
-  // Actions
   setDuration: (duration) => set({ duration, timeRemaining: duration }),
-  
   setLanguage: (language) => set({ language }),
-  
   setMode: (mode) => set({ mode }),
-  
-  setCurrentSnippet: (snippet) => set({ currentSnippet: snippet }),
-  
+  setSnippet: (snippet) => set({ currentSnippet: snippet, userInput: '', currentIndex: 0 }),
+
   startTest: () => set({ 
     isTestActive: true, 
-    isTestComplete: false,
+    isTestComplete: false, 
     isPaused: false,
-    userInput: '',
-    currentIndex: 0,
-    correctChars: 0,
-    incorrectChars: 0,
-    totalKeystrokes: 0,
-    keyErrors: {},
-    timeRemaining: get().duration,
+    startTime: Date.now(),
+    liveWpm: 0,
   }),
-  
+
   pauseTest: () => set({ isPaused: true }),
-  
   resumeTest: () => set({ isPaused: false }),
-  
-  recordKeyError: (key) => {
-    const state = get();
-    const newErrors = { ...state.keyErrors };
-    newErrors[key.toLowerCase()] = (newErrors[key.toLowerCase()] || 0) + 1;
-    set({ keyErrors: newErrors });
-  },
-  
-  updateInput: (input) => {
-    const state = get();
-    const snippet = state.currentSnippet;
-    
-    if (state.isPaused) return;
-    
-    if (!state.isTestActive) {
-      set({ isTestActive: true });
-    }
-    
-    let correct = 0;
-    let incorrect = 0;
-    
-    for (let i = 0; i < input.length; i++) {
-      if (input[i] === snippet[i]) {
-        correct++;
-      } else {
-        incorrect++;
-        // Record the error
-        if (snippet[i] && input.length > state.userInput.length) {
-          get().recordKeyError(snippet[i]);
-        }
-      }
-    }
-    
-    set({
-      userInput: input,
-      currentIndex: input.length,
-      correctChars: correct,
-      incorrectChars: incorrect,
-      totalKeystrokes: state.totalKeystrokes + Math.abs(input.length - state.userInput.length),
-    });
-  },
-  
-  tick: () => {
-    const state = get();
-    if (state.isPaused || state.mode === 'practice') return;
-    
-    const newTime = state.timeRemaining - 1;
-    
-    if (newTime <= 0) {
-      get().calculateResults();
-      set({ 
-        timeRemaining: 0, 
-        isTestActive: false, 
-        isTestComplete: true 
-      });
-    } else {
-      set({ timeRemaining: newTime });
-    }
-  },
-  
-  calculateResults: () => {
-    const state = get();
-    const timeElapsed = state.mode === 'practice' 
-      ? 1 // Assume 1 minute for practice mode
-      : (state.duration - state.timeRemaining) / 60;
-    const totalChars = state.correctChars;
-    const wpm = timeElapsed > 0 ? Math.round((totalChars / 5) / timeElapsed) : 0;
-    const accuracy = state.totalKeystrokes > 0 
-      ? Math.round((state.correctChars / state.totalKeystrokes) * 100) 
-      : 100;
-    
-    set({ wpm, accuracy });
-  },
-  
-  clearInput: () => {
-    set({
-      userInput: '',
-      currentIndex: 0,
-    });
-  },
-  
+
   resetTest: () => {
-    const state = get();
+    const { duration } = get();
     set({
       isTestActive: false,
       isTestComplete: false,
       isPaused: false,
-      timeRemaining: state.duration,
+      timeRemaining: duration,
       userInput: '',
       currentIndex: 0,
       correctChars: 0,
@@ -186,6 +114,155 @@ export const useTypingStore = create<TypingState>((set, get) => ({
       keyErrors: {},
       wpm: 0,
       accuracy: 0,
+      liveWpm: 0,
+      startTime: null,
+      isNewPersonalBest: false,
     });
+  },
+
+  updateInput: (input) => {
+    const { currentSnippet, userInput, keyErrors } = get();
+    const newIndex = input.length;
+    const lastCharIndex = newIndex - 1;
+    
+    // Only process if adding characters (not backspace)
+    if (input.length > userInput.length && lastCharIndex >= 0) {
+      const expectedChar = currentSnippet[lastCharIndex];
+      const typedChar = input[lastCharIndex];
+      
+      if (typedChar !== expectedChar) {
+        // Track the key that was supposed to be typed
+        const newKeyErrors = { ...keyErrors };
+        newKeyErrors[expectedChar] = (newKeyErrors[expectedChar] || 0) + 1;
+        
+        set({
+          userInput: input,
+          currentIndex: newIndex,
+          incorrectChars: get().incorrectChars + 1,
+          totalKeystrokes: get().totalKeystrokes + 1,
+          keyErrors: newKeyErrors,
+        });
+      } else {
+        set({
+          userInput: input,
+          currentIndex: newIndex,
+          correctChars: get().correctChars + 1,
+          totalKeystrokes: get().totalKeystrokes + 1,
+        });
+      }
+    } else {
+      set({ userInput: input, currentIndex: newIndex });
+    }
+    
+    // Update live WPM
+    get().updateLiveWpm();
+  },
+
+  updateLiveWpm: () => {
+    const { startTime, correctChars } = get();
+    if (!startTime) return;
+    
+    const elapsedMinutes = (Date.now() - startTime) / 60000;
+    if (elapsedMinutes < 0.05) return; // Wait at least 3 seconds
+    
+    const liveWpm = Math.round((correctChars / 5) / elapsedMinutes);
+    set({ liveWpm: Math.min(liveWpm, 300) }); // Cap at 300 WPM
+  },
+
+  tick: () => {
+    const { timeRemaining, calculateResults } = get();
+    if (timeRemaining <= 1) {
+      set({ timeRemaining: 0 });
+      calculateResults();
+    } else {
+      set({ timeRemaining: timeRemaining - 1 });
+      get().updateLiveWpm();
+    }
+  },
+
+  calculateResults: () => {
+    const { correctChars, totalKeystrokes, duration, timeRemaining, mode, personalBest } = get();
+    
+    const timeElapsed = mode === 'timed' 
+      ? duration - timeRemaining 
+      : (Date.now() - (get().startTime || Date.now())) / 1000;
+    
+    const minutes = timeElapsed / 60;
+    const wpm = minutes > 0 ? Math.round((correctChars / 5) / minutes) : 0;
+    const accuracy = totalKeystrokes > 0 
+      ? Math.round((correctChars / totalKeystrokes) * 100) 
+      : 0;
+    
+    // Check for personal best
+    const isNewPersonalBest = wpm > personalBest && mode === 'timed';
+    if (isNewPersonalBest) {
+      localStorage.setItem('devtype-personal-best', wpm.toString());
+    }
+
+    set({ 
+      wpm, 
+      accuracy, 
+      isTestActive: false,
+      isTestComplete: true,
+      isNewPersonalBest,
+      personalBest: isNewPersonalBest ? wpm : personalBest,
+    });
+    
+    // Update streak
+    get().updateStreak();
+  },
+
+  loadStreak: () => {
+    if (typeof window === 'undefined') return;
+    
+    const savedStreak = localStorage.getItem('devtype-streak');
+    const savedDate = localStorage.getItem('devtype-last-practice');
+    
+    if (savedStreak && savedDate) {
+      const lastDate = new Date(savedDate).toDateString();
+      const today = new Date().toDateString();
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      
+      if (lastDate === today || lastDate === yesterday) {
+        set({ dailyStreak: parseInt(savedStreak), lastPracticeDate: savedDate });
+      } else {
+        // Streak broken
+        set({ dailyStreak: 0, lastPracticeDate: null });
+        localStorage.removeItem('devtype-streak');
+        localStorage.removeItem('devtype-last-practice');
+      }
+    }
+  },
+
+  updateStreak: () => {
+    if (typeof window === 'undefined') return;
+    
+    const { lastPracticeDate, dailyStreak } = get();
+    const today = new Date().toDateString();
+    const todayISO = new Date().toISOString();
+    
+    if (lastPracticeDate) {
+      const lastDate = new Date(lastPracticeDate).toDateString();
+      if (lastDate !== today) {
+        // New day, increment streak
+        const newStreak = dailyStreak + 1;
+        set({ dailyStreak: newStreak, lastPracticeDate: todayISO });
+        localStorage.setItem('devtype-streak', newStreak.toString());
+        localStorage.setItem('devtype-last-practice', todayISO);
+      }
+    } else {
+      // First practice
+      set({ dailyStreak: 1, lastPracticeDate: todayISO });
+      localStorage.setItem('devtype-streak', '1');
+      localStorage.setItem('devtype-last-practice', todayISO);
+    }
+  },
+
+  loadPersonalBest: () => {
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('devtype-personal-best');
+    if (saved) {
+      set({ personalBest: parseInt(saved) });
+    }
   },
 }));

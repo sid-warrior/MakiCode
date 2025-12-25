@@ -17,6 +17,7 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
     isPaused,
     timeRemaining,
     mode,
+    liveWpm,
     updateInput,
     tick,
     startTest,
@@ -24,10 +25,19 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
     resumeTest,
     resetTest,
     calculateResults,
+    loadStreak,
+    loadPersonalBest,
   } = useTypingStore();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [practiceTime, setPracticeTime] = useState(0);
+  const [showHints, setShowHints] = useState(true);
+
+  // Load streak and personal best on mount
+  useEffect(() => {
+    loadStreak();
+    loadPersonalBest();
+  }, [loadStreak, loadPersonalBest]);
 
   useEffect(() => {
     if (isTestActive && !isPaused && timeRemaining > 0 && mode === 'timed') {
@@ -81,6 +91,7 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
     if (!isTestActive) {
       startTest();
       setPracticeTime(0);
+      setShowHints(false);
     }
 
     if (e.key === 'Enter') {
@@ -107,6 +118,7 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
     if (!isTestActive) {
       startTest();
       setPracticeTime(0);
+      setShowHints(false);
     }
     const newValue = e.target.value;
     if (newValue.length <= currentSnippet.length) updateInput(newValue);
@@ -123,15 +135,31 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
     return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}`;
   };
 
+  // Calculate progress
+  const progress = currentSnippet.length > 0 
+    ? Math.round((userInput.length / currentSnippet.length) * 100) 
+    : 0;
+
   return (
     <div className="w-full max-w-4xl mx-auto px-4 md:px-10 font-mono">
-      {/* Timer and Controls */}
+      {/* Timer, Live WPM and Controls */}
       <div className="flex items-center justify-between mb-4 md:mb-8">
-        <div 
-          className="text-4xl md:text-6xl"
-          style={{ color: isPaused ? 'var(--color-sub)' : 'var(--color-main)' }}
-        >
-          {mode === 'practice' ? formatTime(practiceTime) : timeRemaining}
+        <div className="flex items-center gap-6">
+          {/* Timer */}
+          <div 
+            className="text-4xl md:text-6xl"
+            style={{ color: isPaused ? 'var(--color-sub)' : 'var(--color-main)' }}
+          >
+            {mode === 'practice' ? formatTime(practiceTime) : timeRemaining}
+          </div>
+          
+          {/* Live WPM */}
+          {isTestActive && !isPaused && liveWpm > 0 && (
+            <div className="text-sub">
+              <span className="text-2xl md:text-3xl text-text">{liveWpm}</span>
+              <span className="text-xs md:text-sm ml-1">wpm</span>
+            </div>
+          )}
         </div>
 
         {isTestActive && (
@@ -159,6 +187,16 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
           </div>
         )}
       </div>
+
+      {/* Progress bar */}
+      {isTestActive && (
+        <div className="h-1 bg-bg-sub rounded-full mb-4 overflow-hidden">
+          <div 
+            className="h-full bg-main transition-all duration-100"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
 
       {/* Pause Overlay */}
       {isPaused && (
@@ -243,13 +281,25 @@ export default function TypingTest({ onSnippetComplete, onExit }: TypingTestProp
         />
       </div>
 
+      {/* Hints and Instructions */}
       {!isTestActive && !isTestComplete && (
-        <p className="text-center mt-4 md:mt-6 text-xs md:text-sm text-sub font-mono">
-          {mode === 'practice' 
-            ? 'tap and start typing - no timer'
-            : 'tap and start typing'
-          }
-        </p>
+        <div className="mt-4 md:mt-6 text-center">
+          <p className="text-xs md:text-sm text-sub font-mono mb-3">
+            {mode === 'practice' 
+              ? 'tap and start typing - no timer'
+              : 'tap and start typing'
+            }
+          </p>
+          
+          {/* Keyboard shortcuts hint */}
+          {showHints && (
+            <div className="flex flex-wrap gap-3 justify-center text-xs text-sub/70">
+              <span className="px-2 py-1 bg-bg-sub rounded">Tab → 4 spaces</span>
+              <span className="px-2 py-1 bg-bg-sub rounded">Enter → new line</span>
+              <span className="px-2 py-1 bg-bg-sub rounded">Esc → exit</span>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

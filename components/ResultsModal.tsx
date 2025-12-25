@@ -10,10 +10,40 @@ interface ResultsModalProps {
 }
 
 export default function ResultsModal({ onRestart, snippetsCompleted }: ResultsModalProps) {
-  const { isTestComplete, wpm, accuracy, language, duration, mode, keyErrors } = useTypingStore();
+  const { 
+    isTestComplete, wpm, accuracy, language, duration, mode, keyErrors, 
+    isNewPersonalBest, dailyStreak 
+  } = useTypingStore();
   const { data: session } = useSession();
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const autoSaveAttempted = useRef(false);
+  const confettiTriggered = useRef(false);
+
+  // Trigger confetti only on personal best
+  useEffect(() => {
+    if (isTestComplete && isNewPersonalBest && !confettiTriggered.current) {
+      confettiTriggered.current = true;
+      
+      import('canvas-confetti').then((confettiModule) => {
+        const confetti = confettiModule.default;
+        
+        confetti({
+          particleCount: 150,
+          spread: 100,
+          origin: { y: 0.6 },
+        });
+        
+        setTimeout(() => {
+          confetti({ particleCount: 75, angle: 60, spread: 55, origin: { x: 0 } });
+          confetti({ particleCount: 75, angle: 120, spread: 55, origin: { x: 1 } });
+        }, 150);
+      });
+    }
+    
+    if (!isTestComplete) {
+      confettiTriggered.current = false;
+    }
+  }, [isTestComplete, isNewPersonalBest]);
 
   useEffect(() => {
     if (isTestComplete && session && !autoSaveAttempted.current && mode === 'timed') {
@@ -71,50 +101,51 @@ export default function ResultsModal({ onRestart, snippetsCompleted }: ResultsMo
       onClick={onRestart}
       className="fixed inset-0 bg-bg flex items-center justify-center z-50 cursor-pointer font-mono px-4"
     >
-      <div onClick={(e) => e.stopPropagation()} className="text-center max-w-2xl w-full">
-        {/* Main Stats */}
-        <div className="flex gap-8 md:gap-24 justify-center mb-6 md:mb-8">
-          <div className="text-left">
-            <p className="text-sm md:text-base text-sub mb-1 md:mb-2">wpm</p>
-            <p className="text-5xl md:text-8xl text-main font-normal leading-none">{wpm}</p>
+      <div onClick={(e) => e.stopPropagation()} className="text-center w-full max-w-lg">
+        {/* Personal Best Banner */}
+        {isNewPersonalBest && (
+          <div className="mb-6 px-4 py-2 border border-main rounded-lg inline-block" style={{ backgroundColor: 'rgba(226, 183, 20, 0.1)' }}>
+            <span className="text-main text-sm font-medium">new personal best!</span>
           </div>
-          <div className="text-left">
-            <p className="text-sm md:text-base text-sub mb-1 md:mb-2">accuracy</p>
-            <p className="text-5xl md:text-8xl text-main font-normal leading-none">{accuracy}%</p>
+        )}
+
+        {/* Streak */}
+        {dailyStreak > 0 && (
+          <p className="text-sub text-sm mb-4">{dailyStreak} day streak</p>
+        )}
+
+        {/* Main Stats */}
+        <div className="flex justify-center gap-16 mb-8">
+          <div className="text-center">
+            <p className="text-sub text-sm mb-2">wpm</p>
+            <p className="text-7xl text-main font-normal">{wpm}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sub text-sm mb-2">accuracy</p>
+            <p className="text-7xl text-main font-normal">{accuracy}%</p>
           </div>
         </div>
 
-        {/* Info */}
-        <div className="flex gap-3 md:gap-5 justify-center mb-6 md:mb-8 text-xs md:text-sm text-sub flex-wrap">
-          <span>{mode === 'practice' ? 'practice' : `${duration}s`}</span>
-          <span>•</span>
-          <span>{language === 'all' ? 'mixed' : language}</span>
-          {snippetsCompleted > 0 && (
-            <>
-              <span>•</span>
-              <span>{snippetsCompleted + 1} snippets</span>
-            </>
-          )}
-        </div>
+        {/* Test Info */}
+        <p className="text-sub text-sm mb-8">
+          {mode === 'practice' ? 'practice' : `${duration}s`} • {language === 'all' ? 'mixed' : language}
+          {snippetsCompleted > 0 && ` • ${snippetsCompleted + 1} snippets`}
+        </p>
 
         {/* Problem Keys */}
         {problemKeys.length > 0 && (
-          <div className="mb-6 md:mb-8 p-3 md:p-4 bg-bg-sub rounded-xl border border-border">
-            <p className="text-xs md:text-sm text-sub mb-2 md:mb-3">most missed keys</p>
-            <div className="flex gap-2 md:gap-3 justify-center flex-wrap">
+          <div className="mb-8">
+            <p className="text-sub text-xs mb-3">missed keys</p>
+            <div className="flex gap-2 justify-center">
               {problemKeys.map(([key, count]) => (
                 <div 
                   key={key}
-                  className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-center min-w-[40px] md:min-w-[50px]"
-                  style={{
-                    backgroundColor: `rgba(202, 71, 84, ${Math.min(count * 0.15, 0.8)})`,
-                    border: '1px solid rgba(202, 71, 84, 0.5)',
-                  }}
+                  className="px-3 py-2 rounded-lg bg-bg-sub border border-border text-center min-w-[44px]"
                 >
-                  <span className="text-base md:text-lg font-medium text-text">
-                    {key === ' ' ? '␣' : key === '\n' ? '↵' : key}
+                  <span className="text-sm text-text">
+                    {key === ' ' ? 'spc' : key === '\n' ? 'ent' : key}
                   </span>
-                  <p className="text-xs text-sub mt-0.5 md:mt-1">{count}x</p>
+                  <p className="text-xs text-sub">{count}</p>
                 </div>
               ))}
             </div>
@@ -122,37 +153,28 @@ export default function ResultsModal({ onRestart, snippetsCompleted }: ResultsMo
         )}
 
         {/* Save Status */}
-        <div className="flex gap-5 justify-center mb-3 md:mb-4">
-          {session && mode === 'timed' && (
-            <span className={`text-xs md:text-sm ${saveStatus === 'saved' ? 'text-main' : saveStatus === 'error' ? 'text-error' : 'text-sub'}`}>
-              {saveStatus === 'saving' && 'auto-saving...'}
-              {saveStatus === 'saved' && 'saved to leaderboard'}
-              {saveStatus === 'error' && 'failed to save'}
-            </span>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-5 justify-center">
-          <button
-            onClick={onRestart}
-            className="px-6 md:px-8 py-3 md:py-4 bg-main hover:bg-yellow-600 border-none rounded-lg text-sm md:text-base font-medium text-bg cursor-pointer font-mono transition-colors"
-          >
-            {mode === 'practice' ? 'continue practice' : 'next test'}
-          </button>
-        </div>
-
-        {!session && mode === 'timed' && (
-          <p className="text-sub text-xs md:text-sm mt-4 md:mt-6">
-            login to auto-save your scores
+        {session && mode === 'timed' && saveStatus !== 'idle' && (
+          <p className={`text-xs mb-6 ${saveStatus === 'saved' ? 'text-main' : saveStatus === 'error' ? 'text-error' : 'text-sub'}`}>
+            {saveStatus === 'saving' && 'saving...'}
+            {saveStatus === 'saved' && 'saved to leaderboard'}
+            {saveStatus === 'error' && 'failed to save'}
           </p>
         )}
 
-        <p className="text-sub/50 text-xs mt-6 md:mt-8 hidden md:block">
-          press enter or click anywhere to continue
-        </p>
-        <p className="text-sub/50 text-xs mt-6 md:hidden">
-          tap anywhere to continue
+        {/* Next Test Button */}
+        <button
+          onClick={onRestart}
+          className="px-8 py-3 bg-main hover:opacity-80 border-none rounded-lg text-sm font-medium text-bg cursor-pointer font-mono transition-opacity"
+        >
+          {mode === 'practice' ? 'continue' : 'next test'}
+        </button>
+
+        {!session && mode === 'timed' && (
+          <p className="text-sub text-xs mt-6">login to save scores</p>
+        )}
+
+        <p className="text-sub/40 text-xs mt-8">
+          press enter to continue
         </p>
       </div>
     </div>

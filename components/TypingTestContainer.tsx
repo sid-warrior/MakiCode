@@ -2,13 +2,13 @@
 
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { useTypingStore } from '@/store/typingStore';
-import { getRandomSnippet } from '@/lib/snippets';
+import { getRandomSnippet, Language } from '@/lib/snippets';
 import TestConfig from './TestConfig';
 import TypingTest from './TypingTest';
 import ResultsModal from './ResultsModal';
 
 export default function TypingTestContainer() {
-  const { setCurrentSnippet, resetTest, language, isTestActive, clearInput } = useTypingStore();
+  const { setSnippet, resetTest, language, isTestActive } = useTypingStore();
   const [snippetsCompleted, setSnippetsCompleted] = useState(0);
   const languageRef = useRef(language);
 
@@ -16,11 +16,10 @@ export default function TypingTestContainer() {
     languageRef.current = language;
   }, [language]);
 
-  const loadSnippetForLanguage = useCallback((lang: string) => {
-    const targetLang = lang === 'all' ? undefined : lang;
-    const snippet = getRandomSnippet(targetLang);
-    setCurrentSnippet(snippet.code);
-  }, [setCurrentSnippet]);
+  const loadSnippetForLanguage = useCallback((lang: Language | 'all') => {
+    const snippet = getRandomSnippet(lang);
+    setSnippet(snippet.code);
+  }, [setSnippet]);
 
   useEffect(() => {
     loadSnippetForLanguage(language);
@@ -29,10 +28,12 @@ export default function TypingTestContainer() {
   const handleSnippetComplete = useCallback(() => {
     if (isTestActive) {
       setSnippetsCompleted(prev => prev + 1);
-      clearInput();
-      loadSnippetForLanguage(languageRef.current);
+      // Load next snippet without resetting stats
+      const snippet = getRandomSnippet(languageRef.current);
+      const store = useTypingStore.getState();
+      store.setSnippet(snippet.code);
     }
-  }, [isTestActive, clearInput, loadSnippetForLanguage]);
+  }, [isTestActive]);
 
   const handleRestart = () => {
     setSnippetsCompleted(0);

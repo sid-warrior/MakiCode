@@ -5,6 +5,7 @@ import { Session } from 'next-auth';
 import Link from 'next/link';
 import Image from 'next/image';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { getUnlockedAchievements, achievements, AchievementStats } from '@/lib/achievements';
 
 interface Score {
   _id: string;
@@ -22,9 +23,12 @@ interface DashboardClientProps {
 export default function DashboardClient({ session }: DashboardClientProps) {
   const [scores, setScores] = useState<Score[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dailyStreak, setDailyStreak] = useState(0);
+  const [personalBest, setPersonalBest] = useState(0);
 
   useEffect(() => {
     fetchScores();
+    loadLocalStats();
   }, []);
 
   const fetchScores = async () => {
@@ -37,6 +41,13 @@ export default function DashboardClient({ session }: DashboardClientProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadLocalStats = () => {
+    const streak = localStorage.getItem('devtype-streak');
+    const best = localStorage.getItem('devtype-personal-best');
+    if (streak) setDailyStreak(parseInt(streak));
+    if (best) setPersonalBest(parseInt(best));
   };
 
   const stats = session.user?.stats || {
@@ -63,6 +74,17 @@ export default function DashboardClient({ session }: DashboardClientProps) {
     accuracy: s.accuracy,
     date: new Date(s.timestamp).toLocaleDateString(),
   }));
+
+  // Calculate achievements
+  const achievementStats: AchievementStats = {
+    wpm: stats.bestWpm || personalBest,
+    accuracy: stats.avgAccuracy,
+    testsCompleted: stats.testsCompleted,
+    dailyStreak,
+    personalBest: stats.bestWpm || personalBest,
+  };
+  const unlockedAchievements = getUnlockedAchievements(achievementStats);
+  const lockedAchievements = achievements.filter(a => !unlockedAchievements.some(u => u.id === a.id));
 
   return (
     <div className="min-h-screen font-mono bg-bg">
@@ -94,6 +116,11 @@ export default function DashboardClient({ session }: DashboardClientProps) {
             <h1 className="text-xl md:text-3xl font-normal text-main">{session.user?.name}</h1>
             <p className="text-sub text-xs md:text-base">{session.user?.email}</p>
           </div>
+          {dailyStreak > 0 && (
+            <div className="ml-auto px-3 py-1.5 bg-bg-sub rounded-lg border border-border">
+              <span className="text-sm text-sub">{dailyStreak} day streak</span>
+            </div>
+          )}
         </div>
 
         {/* Main Stats */}
@@ -104,7 +131,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
           </div>
           <div className="bg-bg-sub rounded-xl p-4 md:p-6 border border-border">
             <p className="text-xs md:text-sm text-sub mb-1 md:mb-2">best wpm</p>
-            <p className="text-2xl md:text-4xl text-main font-normal">{stats.bestWpm}</p>
+            <p className="text-2xl md:text-4xl text-main font-normal">{stats.bestWpm || personalBest}</p>
           </div>
           <div className="bg-bg-sub rounded-xl p-4 md:p-6 border border-border">
             <p className="text-xs md:text-sm text-sub mb-1 md:mb-2">avg wpm</p>
@@ -113,6 +140,33 @@ export default function DashboardClient({ session }: DashboardClientProps) {
           <div className="bg-bg-sub rounded-xl p-4 md:p-6 border border-border">
             <p className="text-xs md:text-sm text-sub mb-1 md:mb-2">accuracy</p>
             <p className="text-2xl md:text-4xl text-main font-normal">{stats.avgAccuracy}%</p>
+          </div>
+        </div>
+
+        {/* Achievements */}
+        <div className="bg-bg-sub rounded-xl p-4 md:p-6 border border-border mb-6 md:mb-10">
+          <h3 className="text-base md:text-lg text-text mb-3 md:mb-4">
+            achievements ({unlockedAchievements.length}/{achievements.length})
+          </h3>
+          <div className="flex flex-wrap gap-2 md:gap-3">
+            {unlockedAchievements.map((a) => (
+              <div 
+                key={a.id}
+                className="px-3 md:px-4 py-2 md:py-3 bg-bg rounded-lg border border-main/30 text-xs md:text-sm"
+                title={a.description}
+              >
+                <span className="text-main">{a.name}</span>
+              </div>
+            ))}
+            {lockedAchievements.slice(0, 5).map((a) => (
+              <div 
+                key={a.id}
+                className="px-3 md:px-4 py-2 md:py-3 bg-bg rounded-lg border border-border text-xs md:text-sm opacity-50"
+                title={a.description}
+              >
+                <span className="text-sub">{a.name}</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -127,22 +181,22 @@ export default function DashboardClient({ session }: DashboardClientProps) {
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="wpmGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#e2b714" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#e2b714" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="var(--color-main)" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="var(--color-main)" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="test" stroke="#646669" fontSize={10} />
-                    <YAxis stroke="#646669" fontSize={10} />
+                    <XAxis dataKey="test" stroke="var(--color-sub)" fontSize={10} />
+                    <YAxis stroke="var(--color-sub)" fontSize={10} />
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: '#2c2e31', 
-                        border: '1px solid #3d3d3d',
+                        backgroundColor: 'var(--color-bg-sub)', 
+                        border: '1px solid var(--color-border)',
                         borderRadius: '8px',
-                        color: '#d1d0c5',
+                        color: 'var(--color-text)',
                         fontSize: '12px',
                       }}
                     />
-                    <Area type="monotone" dataKey="wpm" stroke="#e2b714" fill="url(#wpmGradient)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="wpm" stroke="var(--color-main)" fill="url(#wpmGradient)" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -154,14 +208,14 @@ export default function DashboardClient({ session }: DashboardClientProps) {
               <div className="h-36 md:h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
-                    <XAxis dataKey="test" stroke="#646669" fontSize={10} />
-                    <YAxis stroke="#646669" fontSize={10} domain={[0, 100]} />
+                    <XAxis dataKey="test" stroke="var(--color-sub)" fontSize={10} />
+                    <YAxis stroke="var(--color-sub)" fontSize={10} domain={[0, 100]} />
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: '#2c2e31', 
-                        border: '1px solid #3d3d3d',
+                        backgroundColor: 'var(--color-bg-sub)', 
+                        border: '1px solid var(--color-border)',
                         borderRadius: '8px',
-                        color: '#d1d0c5',
+                        color: 'var(--color-text)',
                         fontSize: '12px',
                       }}
                     />
@@ -197,7 +251,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
           <div className="text-center py-8 md:py-12 bg-bg-sub rounded-xl border border-border">
             <p className="text-sub mb-4">no tests yet</p>
             <Link href="/" className="text-main no-underline hover:opacity-80 transition-opacity">
-              start typing →
+              start typing
             </Link>
           </div>
         ) : (
