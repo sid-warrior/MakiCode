@@ -16,7 +16,7 @@ export default function TypingTestContainer() {
     languageRef.current = language;
   }, [language]);
 
-  const loadSnippetForLanguage = useCallback((lang: Language | 'all') => {
+  const loadSnippetForLanguage = useCallback((lang: Language) => {
     const snippet = getRandomSnippet(lang);
     setSnippet(snippet.code);
   }, [setSnippet]);

@@ -6,7 +6,7 @@ export type TestMode = 'timed' | 'practice';
 interface TypingState {
   // Config
   duration: number;
-  language: Language | 'all';
+  language: Language;
   mode: TestMode;
   
   // Test state
@@ -42,7 +42,7 @@ interface TypingState {
   
   // Actions
   setDuration: (duration: number) => void;
-  setLanguage: (language: Language | 'all') => void;
+  setLanguage: (language: Language) => void;
   setMode: (mode: TestMode) => void;
   setSnippet: (snippet: string) => void;
   startTest: () => void;
@@ -61,7 +61,7 @@ interface TypingState {
 export const useTypingStore = create<TypingState>((set, get) => ({
   // Initial state
   duration: 30,
-  language: 'all',
+  language: 'typescript',
   mode: 'timed',
   isTestActive: false,
   isTestComplete: false,

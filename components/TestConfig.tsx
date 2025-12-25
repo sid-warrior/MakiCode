@@ -45,7 +45,7 @@ export default function TestConfig({ onNewSnippet }: TestConfigProps) {
     setCustomTime('');
   };
 
-  const handleLanguageChange = (lang: Language | 'all') => {
+  const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
     setLangOpen(false);
     onNewSnippet();
@@ -143,22 +143,14 @@ export default function TestConfig({ onNewSnippet }: TestConfigProps) {
         <div className="relative" ref={langRef}>
           <button
             onClick={() => setLangOpen(!langOpen)}
-            className={`px-3 md:px-4 py-1.5 md:py-2 bg-bg-sub rounded-lg font-mono text-xs md:text-sm cursor-pointer border-none flex items-center gap-2 transition-colors
-              ${language === 'all' ? 'text-sub' : 'text-main'}`}
+            className="px-3 md:px-4 py-1.5 md:py-2 bg-bg-sub rounded-lg font-mono text-xs md:text-sm cursor-pointer border-none flex items-center gap-2 transition-colors text-main"
           >
-            {language === 'all' ? 'all languages' : language}
+            {language}
             <span className="text-sub text-xs">▼</span>
           </button>
           
           {langOpen && (
             <div className="absolute top-full left-0 mt-2 bg-bg-sub rounded-lg py-2 min-w-[140px] z-50 border border-border">
-              <button
-                onClick={() => handleLanguageChange('all')}
-                className={`w-full text-left px-4 py-2 text-xs md:text-sm font-mono border-none cursor-pointer transition-colors
-                  ${language === 'all' ? 'text-main bg-bg' : 'text-sub hover:text-text hover:bg-bg bg-transparent'}`}
-              >
-                all languages
-              </button>
               {languages.map((lang) => (
                 <button
                   key={lang}

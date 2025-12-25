@@ -6,21 +6,9 @@ export const languages: Language[] = ['typescript', 'javascript', 'python', 'rus
 
 const snippets: Record<Language, string[]> = snippetsData as Record<Language, string[]>;
 
-export function getRandomSnippet(language?: Language | 'all' | string): { code: string; language: Language } {
-  // Determine which language to use
-  let lang: Language;
+export function getRandomSnippet(language: Language): { code: string; language: Language } {
+  const langSnippets = snippets[language];
   
-  if (!language || language === 'all') {
-    // Pick a random language
-    lang = languages[Math.floor(Math.random() * languages.length)];
-  } else if (languages.includes(language as Language)) {
-    lang = language as Language;
-  } else {
-    // Fallback to random
-    lang = languages[Math.floor(Math.random() * languages.length)];
-  }
-  
-  const langSnippets = snippets[lang];
   if (!langSnippets || langSnippets.length === 0) {
     // Fallback
     return { code: 'const hello = "world";', language: 'typescript' };
@@ -28,7 +16,7 @@ export function getRandomSnippet(language?: Language | 'all' | string): { code: 
   
   const code = langSnippets[Math.floor(Math.random() * langSnippets.length)];
   
-  return { code, language: lang };
+  return { code, language };
 }
 
 export function getAllSnippets(): Record<Language, string[]> {
