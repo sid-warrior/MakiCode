@@ -121,37 +121,42 @@ export const useTypingStore = create<TypingState>((set, get) => ({
   },
 
   updateInput: (input) => {
-    const { currentSnippet, userInput, keyErrors } = get();
-    const newIndex = input.length;
-    const lastCharIndex = newIndex - 1;
+    const { currentSnippet, userInput, keyErrors, currentIndex } = get();
+    const inputLen = input.length;
     
-    // Only process if adding characters (not backspace)
-    if (input.length > userInput.length && lastCharIndex >= 0) {
-      const expectedChar = currentSnippet[lastCharIndex];
-      const typedChar = input[lastCharIndex];
+    // Handle backspace - always allow going back
+    if (inputLen < userInput.length) {
+      set({ userInput: input, currentIndex: inputLen });
+      get().updateLiveWpm();
+      return;
+    }
+    
+    // Handle new character typed
+    if (inputLen > userInput.length) {
+      const typingIndex = userInput.length; // Current position being typed
+      const expectedChar = currentSnippet[typingIndex];
+      const typedChar = input[inputLen - 1]; // The new character typed
       
-      if (typedChar !== expectedChar) {
-        // Track the key that was supposed to be typed
+      if (typedChar === expectedChar) {
+        // Correct character - advance
+        set({
+          userInput: input,
+          currentIndex: inputLen,
+          correctChars: get().correctChars + 1,
+          totalKeystrokes: get().totalKeystrokes + 1,
+        });
+      } else {
+        // Wrong character - DON'T advance, just track the error
         const newKeyErrors = { ...keyErrors };
         newKeyErrors[expectedChar] = (newKeyErrors[expectedChar] || 0) + 1;
         
         set({
-          userInput: input,
-          currentIndex: newIndex,
+          // Keep userInput the same (don't add wrong char)
           incorrectChars: get().incorrectChars + 1,
           totalKeystrokes: get().totalKeystrokes + 1,
           keyErrors: newKeyErrors,
         });
-      } else {
-        set({
-          userInput: input,
-          currentIndex: newIndex,
-          correctChars: get().correctChars + 1,
-          totalKeystrokes: get().totalKeystrokes + 1,
-        });
       }
-    } else {
-      set({ userInput: input, currentIndex: newIndex });
     }
     
     // Update live WPM
