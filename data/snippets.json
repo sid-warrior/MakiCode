@@ -71,7 +71,7 @@
         "public int gcd(int a, int b) {\n    while (b != 0) {\n        int temp = b;\n        b = a % b;\n        a = temp;\n    }\n    return a;\n}",
         "public int countOccurrences(int[] arr, int target) {\n    int count = 0;\n    for (int i = 0; i < arr.length; i++) {\n        if (arr[i] == target) {\n            count++;\n        }\n    }\n    return count;\n}"
     ],
-    "cpp": [
+    "c++": [
         "int binarySearch(vector<int>& arr, int target) {\n    int left = 0;\n    int right = arr.size() - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (arr[mid] == target) {\n            return mid;\n        } else if (arr[mid] < target) {\n            left = mid + 1;\n        } else {\n            right = mid - 1;\n        }\n    }\n    return -1;\n}",
         "int fibonacci(int n) {\n    if (n <= 1) {\n        return n;\n    }\n    int a = 0;\n    int b = 1;\n    for (int i = 2; i <= n; i++) {\n        int temp = a + b;\n        a = b;\n        b = temp;\n    }\n    return b;\n}",
         "bool isPalindrome(string s) {\n    string cleaned = \"\";\n    for (char c : s) {\n        if (isalnum(c)) {\n            cleaned += tolower(c);\n        }\n    }\n    int left = 0;\n    int right = cleaned.length() - 1;\n    while (left < right) {\n        if (cleaned[left] != cleaned[right]) {\n            return false;\n        }\n        left++;\n        right--;\n    }\n    return true;\n}",
@@ -82,5 +82,8 @@
         "int findMax(vector<int>& arr) {\n    if (arr.empty()) {\n        return INT_MIN;\n    }\n    int maxVal = arr[0];\n    for (int i = 1; i < arr.size(); i++) {\n        if (arr[i] > maxVal) {\n            maxVal = arr[i];\n        }\n    }\n    return maxVal;\n}",
         "int gcd(int a, int b) {\n    while (b != 0) {\n        int temp = b;\n        b = a % b;\n        a = temp;\n    }\n    return a;\n}",
         "int countOccurrences(vector<int>& arr, int target) {\n    int count = 0;\n    for (int i = 0; i < arr.size(); i++) {\n        if (arr[i] == target) {\n            count++;\n        }\n    }\n    return count;\n}"
+    ],
+    "English": [
+        "get when into work she so look man not open hand after some end leave think\nwell through might but people mean problem play each stand way world know show\nover well have over year in man late know house can must consider form become"
     ]
 }

@@ -13,8 +13,8 @@ export default function Header() {
     <header className="w-full py-4 md:py-6 px-4 md:px-10 font-mono">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="text-xl md:text-2xl font-medium text-main no-underline hover:opacity-80 transition-opacity">
-          devtype
+        <Link href="/" className="text-2xl md:text-2xl font-medium text-main no-underline hover:opacity-80 transition-opacity">
+          MakiCode
         </Link>
 
         {/* Desktop Nav */}
@@ -25,27 +25,7 @@ export default function Header() {
             leaderboard
           </Link>
           
-          {session ? (
-            <>
-              <Link href="/dashboard" className="text-sm text-sub no-underline hover:text-text transition-colors">
-                {session.user?.name || 'profile'}
-              </Link>
-              <button 
-                onClick={() => signOut()}
-                className="text-sm text-sub bg-transparent border-none cursor-pointer font-mono hover:text-text transition-colors"
-              >
-                logout
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => signIn('google')}
-              className="px-5 py-2.5 text-sm font-medium rounded-lg cursor-pointer font-mono border-none transition-opacity hover:opacity-80"
-              style={{ backgroundColor: 'var(--color-main)', color: '#1a1a1a' }}
-            >
-              login
-            </button>
-          )}
+          
         </nav>
 
         {/* Mobile Menu Button */}
