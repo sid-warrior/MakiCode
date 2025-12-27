@@ -3,13 +3,13 @@ import Providers from "@/components/Providers";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 
-const siteUrl = "https://devtype.pankajk.tech";
+const siteUrl = "https://5idhant.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "DevType - Master Your Coding Speed",
-    template: "%s | DevType",
+    default: "MakiCode - Typing Test for Developers",
+    template: "%s | MakiCode",
   },
   description: "Practice typing with real code snippets. Improve your WPM and accuracy typing code in TypeScript, JavaScript, Python, Rust, Go, Java, and C++.",
   keywords: [
@@ -31,21 +31,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: siteUrl,
-    siteName: "DevType",
-    title: "DevType - Master Your Coding Speed",
+    siteName: "MakiCode",
+    title: "MakiCode - Typing Test for Developers",
     description: "Practice typing with real code snippets. Improve your WPM and accuracy with TypeScript, JavaScript, Python, Rust, Go, Java, and C++.",
     images: [
       {
         url: `${siteUrl}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: "DevType - Typing Speed Test for Developers",
+        alt: "MakiCode - Typing Speed Test for Developers",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DevType - Master Your Coding Speed",
+    title: "MakiCode - Typing Test for Developers",
     description: "Practice typing with real code snippets. Improve your WPM and accuracy.",
     images: [`${siteUrl}/og-image.png`],
     creator: "@pankajkumardev",
@@ -87,10 +87,10 @@ export default function RootLayout({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@pankajkumardev" />
         <meta name="twitter:creator" content="@pankajkumardev" />
-        <meta name="twitter:title" content="DevType - Master Your Coding Speed" />
+        <meta name="twitter:title" content="MakiCode - Master Your Coding Speed" />
         <meta name="twitter:description" content="Practice typing with real code snippets. Improve your WPM and accuracy." />
-        <meta name="twitter:image" content="https://devtype.pankajk.tech/og-image.png" />
-        <meta name="twitter:image:alt" content="DevType - Typing Speed Test for Developers" />
+        <meta name="twitter:image" content="https://5idhant.vercel.app/og-image.png" />
+        <meta name="twitter:image:alt" content="MakiCode - Typing Speed Test for Developers" />
       </head>
       <body className="antialiased">
         <Providers>
